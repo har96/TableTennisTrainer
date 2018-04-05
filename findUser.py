@@ -1,7 +1,13 @@
 from freenect import sync_get_depth as get_depth, sync_get_video as get_video
 import cv2 
 import numpy as np
+import sys
+from drawTable import drawTable
 from frame_convert2 import video_cv, pretty_depth
+
+if len(sys.argv) != 2:
+    windows = ""
+else: windows = sys.argv[1]
 
 def get_contour(contours, min, max):
     for c in contours:
@@ -19,18 +25,29 @@ def prepare_depth(image):
     img = pretty_depth(image)
     img = cv2.medianBlur(img, 5)
     return img
+
+def create_windows():
+    if 'd' in windows:
+        cv2.namedWindow('depth')
+    if 'c' in windows:
+        cv2.namedWindow('color')
+    if 't' in windows:
+        cv2.namedWindow('threshold')
+    if 'g' in windows:
+        cv2.namedWindow('grid')
+
   
 def doloop():
     global depth, rgb
 
-    cv2.namedWindow('depth')
-    cv2.namedWindow('rgb')
+    
+    create_windows()
 
-    cv2.createTrackbar('distance min', 'rgb', 0, 255, lambda x: None)
-    cv2.createTrackbar('distance max', 'rgb', 0, 255, lambda x: None)
+    cv2.createTrackbar('distance min', 'color', 0, 255, lambda x: None)
+    cv2.createTrackbar('distance max', 'color', 0, 255, lambda x: None)
     nothing = lambda x: None
-    cv2.createTrackbar('min', 'rgb', 0, 500, nothing)
-    cv2.createTrackbar('max', 'rgb', 0, 1000, nothing)
+    cv2.createTrackbar('min', 'color', 0, 500, nothing)
+    cv2.createTrackbar('max', 'color', 0, 1000, nothing)
     
     distance_max = 249
     distance_min = 215
@@ -44,8 +61,8 @@ def doloop():
         depth = prepare_depth(depth)
         ret, thresh1 = cv2.threshold(depth, distance_min, 255, cv2.THRESH_TOZERO)
         ret, thresh = cv2.threshold(thresh1, distance_max, 255, cv2.THRESH_TOZERO_INV)
-        cv2.imshow('depth', depth)
-        cv2.imshow('thresh', thresh)
+        if 'd' in windows: cv2.imshow('depth', depth)
+        if 't' in windows: cv2.imshow('threshold', thresh)
         contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
         # Get target point
@@ -62,10 +79,11 @@ def doloop():
                     #1, (0,255,0), 2, cv2.CV_AA)
                 cv2.circle(rgb, target_point, 4, (255,0,0), -1)
                 cv2.drawContours(rgb, [target], -1, (0, 255, 0), 3)
-                print x_val
 
-        #cv2.imshow('depth', depth)
-        cv2.imshow('rgb', video_cv(rgb))
+                if 'g' in windows: cv2.imshow('grid', drawTable(target_point[0]))
+
+
+        if 'c' in windows: cv2.imshow('color', video_cv(rgb))
         char = cv2.waitKey(100)
         if char == 27:
             cv2.destroyAllWindows()
