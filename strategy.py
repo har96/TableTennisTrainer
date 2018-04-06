@@ -38,3 +38,11 @@ def pick_target(userpos, difficulty):
         y = HEIGHT * f_t
 
         return get_nearest_grid( (x, y) )
+
+def pick_speed(userpos, difficulty):
+    if difficulty == RAND:
+        return random.randrange(255)
+    elif difficulty == EASY or difficulty == MEDIUM:
+        return random.randrange(100)
+    elif difficulty == HARD:
+        return random.randrange(100,255)

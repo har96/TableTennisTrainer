@@ -52,7 +52,6 @@ def select_grid(event, x, y, flags, param):
     global current_target
     if event == cv2.EVENT_LBUTTONDOWN:
         gridpoint = get_nearest_grid((x,y),WIDTH, HEIGHT, 50)
-        print "New target: ", gridpoint
         current_target = gridpoint
     elif event == cv2.EVENT_RBUTTONDOWN:
         current_target = None
@@ -99,14 +98,14 @@ def doloop():
             depth = depth[:,trim:depth.shape[1] - trim]
             rgb = rgb[:,trim:rgb.shape[1] - trim]
         
-        # Get contours
+        # Threshold
         ret, thresh1 = cv2.threshold(depth, distance_min, 255, cv2.THRESH_TOZERO)
         ret, thresh = cv2.threshold(thresh1, distance_max, 255, cv2.THRESH_TOZERO_INV)
         if 'd' in windows: cv2.imshow('depth', depth)
         if 't' in windows: cv2.imshow('threshold', thresh)
-        contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
         # Get target point
+        contours, hierarchy = cv2.findContours(thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
         target = get_contour2(contours, min_a, max_a)
         if not target is None:
             M = cv2.moments(target)
@@ -123,9 +122,15 @@ def doloop():
 
                 if userpos == -1: userpos = target_point[0]
 
-        if not current_target: current_target = pick_target(userpos, diff)
+        if diff: 
+            current_target = pick_target(userpos, diff)
+            current_speed = pick_speed(userpos, diff)
+
         if 'g' in windows: 
             cv2.imshow('grid', drawTable(userpos, current_target))
+
+        # Send data
+        print "{} {} {} {}".format(current_target[0], current_target[1], current_speed, "N")
 
 
         if 'c' in windows: cv2.imshow('color', video_cv(rgb))
