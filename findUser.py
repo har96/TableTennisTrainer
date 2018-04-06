@@ -5,6 +5,7 @@ import sys
 from drawTable import drawTable
 from strategy import *
 from frame_convert2 import video_cv, pretty_depth
+import serial
 
 DISTANCE_MAX = 249
 DISTANCE_MIN = 215
@@ -15,9 +16,16 @@ EDGE = 20
 WIDTH = 640
 HEIGHT = 575
 
-if len(sys.argv) != 2:
+if len(sys.argv) != 3:
+    print "USAGE: findUser.py windows serial_handle"
     windows = ""
-else: windows = sys.argv[1]
+else: 
+    windows = sys.argv[1]
+    try:
+        serial_out = serial.Serial(sys.argv[2], 9600)
+    except IOError:
+        print "Failed to open serial bus"
+        sys.exit(0)
 
 def get_contour(contours, min_a, max_a):
     for c in contours:
@@ -54,12 +62,20 @@ def select_grid(event, x, y, flags, param):
         gridpoint = get_nearest_grid((x,y),WIDTH, HEIGHT, 50)
         current_target = gridpoint
     elif event == cv2.EVENT_RBUTTONDOWN:
-        current_target = None
-        
+        # Send data
+        current_speed = 125
+        target = get_coords(current_target)
+        data = "{} {} {}".format(target[1], target[0], current_speed)
+        print "----------------"
+        print target
+        print data
+        serial_out.write(data)
+        print "from device: ", serial_out.read()
+        print "----------------"
 
-  
 def doloop():
     global depth, rgb, current_target
+
 
     current_target = None
     
@@ -129,8 +145,7 @@ def doloop():
         if 'g' in windows: 
             cv2.imshow('grid', drawTable(userpos, current_target))
 
-        # Send data
-        print "{} {} {} {}".format(current_target[0], current_target[1], current_speed, "N")
+
 
 
         if 'c' in windows: cv2.imshow('color', video_cv(rgb))
@@ -145,3 +160,4 @@ def doloop():
 
        
 doloop()
+serial_out.close()

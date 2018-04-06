@@ -20,6 +20,15 @@ def get_nearest_grid(point, width=WIDTH, height=HEIGHT, spacing=50):
 
     return xs[x_i], ys[y_i]
 
+def get_coords(point, width=WIDTH, height=HEIGHT, spacing=50):
+    xs = np.arange(20,width, spacing)
+    ys = np.arange(20, height, spacing)[:-2]
+    x_i = (np.abs(xs - point[0])).argmin()
+    y_i = (np.abs(ys - point[1])).argmin()
+
+    return x_i, y_i
+
+
 def pick_target(userpos, difficulty):
     if difficulty == RAND:
         return get_nearest_grid( (random.randrange(0,WIDTH), random.randrange(0,HEIGHT)) )
