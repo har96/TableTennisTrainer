@@ -87,7 +87,7 @@ def doloop():
     cv2.createTrackbar('min', 'color', 0, 500, nothing)
     cv2.createTrackbar('max', 'color', 0, 1000, nothing)
     cv2.createTrackbar('trim', 'color', 0, 200, nothing)
-    cv2.createTrackbar('user', 'grid', 0, 640, nothing)
+   # cv2.createTrackbar('user', 'grid', 0, 640, nothing)
     cv2.createTrackbar('difficulty', 'grid', 1, 4, nothing)
     
     while True:
@@ -157,6 +157,9 @@ def doloop():
             cv2.imwrite('capture.png', video_cv(rgb))
             cv2.namedWindow('saved')
             cv2.imshow('saved', video_cv(rgb))
+        elif char == ord('r'):
+            serial_out.close()
+            serial_out.open()
 
        
 doloop()
