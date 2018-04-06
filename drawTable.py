@@ -17,7 +17,7 @@ def drawGrid(img, width, height):
 
     return img
 
-def drawTable(userPos):
+def drawTable(userPos, current_target=None):
     width = 640
     height = 575  # 640/ (1.525/(2.74*0.5))
     img = createBlank(width, height)
@@ -30,6 +30,10 @@ def drawTable(userPos):
 
     # Half mark
     cv2.rectangle(img, (width/2 - 1,25), (width/2 + 1, height - 25), (255,255,255), 2)
+
+    if current_target:
+        cv2.rectangle(img, (current_target[0]-25, current_target[1]-25), \
+                (current_target[0] + 25, current_target[1] + 25), (10, 10, 255), 2)
 
     return drawGrid(img, width, height)
 
