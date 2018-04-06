@@ -9,10 +9,13 @@ def createBlank(width, height):
 def drawGrid(img, width, height):
     color = (0, 0, 0)
     for i in range(13):
-       offset = 20 + i*50
-       cv2.line(img, (offset, 0), (offset, height), color, 1)
-       if i < 10:
-           cv2.line(img, (0, offset), (width, offset), color, 1)
+        offset = 20 + i*50
+        cv2.line(img, (offset, 0), (offset, height), color, 1)
+        if i < 10:
+            cv2.line(img, (0, offset), (width, offset), color, 1)
+            cv2.putText(img, str(i), (2, offset), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 1)
+
+        cv2.putText(img, str(i), (offset-15, 19), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 1)
 
 
     return img

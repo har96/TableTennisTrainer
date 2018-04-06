@@ -54,6 +54,8 @@ def select_grid(event, x, y, flags, param):
         gridpoint = get_nearest_grid((x,y),WIDTH, HEIGHT, 50)
         print "New target: ", gridpoint
         current_target = gridpoint
+    elif event == cv2.EVENT_RBUTTONDOWN:
+        current_target = None
         
 
   
@@ -70,6 +72,8 @@ def doloop():
     cv2.createTrackbar('min', 'color', 0, 500, nothing)
     cv2.createTrackbar('max', 'color', 0, 1000, nothing)
     cv2.createTrackbar('trim', 'color', 0, 200, nothing)
+    cv2.createTrackbar('user', 'grid', 0, 640, nothing)
+    cv2.createTrackbar('difficulty', 'grid', 1, 4, nothing)
     
     while True:
         # Trackbar updates
@@ -78,6 +82,8 @@ def doloop():
         min_a = cv2.getTrackbarPos('min', 'color')
         max_a = cv2.getTrackbarPos('max', 'color')
         trim = cv2.getTrackbarPos('trim', 'color')
+        diff = cv2.getTrackbarPos('difficulty', 'grid')
+        userpos = cv2.getTrackbarPos('user', 'grid')
         if distance_min == -1: distance_min = DISTANCE_MIN
         if distance_max == -1: distance_max = DISTANCE_MAX
         if min_a == -1: min_a = MIN_A
@@ -115,8 +121,11 @@ def doloop():
                 cv2.circle(rgb, target_point, 4, (255,0,0), -1)
                 cv2.drawContours(rgb, [target], -1, (0, 255, 0), 3)
 
-                if 'g' in windows: 
-                    cv2.imshow('grid', drawTable(target_point[0], current_target))
+                if userpos == -1: userpos = target_point[0]
+
+        if not current_target: current_target = pick_target(userpos, diff)
+        if 'g' in windows: 
+            cv2.imshow('grid', drawTable(userpos, current_target))
 
 
         if 'c' in windows: cv2.imshow('color', video_cv(rgb))
