@@ -16,16 +16,18 @@ EDGE = 20
 WIDTH = 640
 HEIGHT = 575
 
-if len(sys.argv) != 3:
+if len(sys.argv) < 2:
     print "USAGE: findUser.py windows serial_handle"
     windows = ""
 else: 
     windows = sys.argv[1]
-    try:
-        serial_out = serial.Serial(sys.argv[2], 9600)
-    except IOError:
-        print "Failed to open serial bus"
-        sys.exit(0)
+    if len(sys.argv) == 3:
+        try:
+            serial_out = serial.Serial(sys.argv[2], 9600)
+        except IOError:
+            print "Failed to open serial bus"
+            sys.exit(0)
+    else: serial_out = None
 
 def get_contour(contours, min_a, max_a):
     for c in contours:
@@ -61,11 +63,12 @@ def select_grid(event, x, y, flags, param):
     if event == cv2.EVENT_LBUTTONDOWN:
         gridpoint = get_nearest_grid((x,y),WIDTH, HEIGHT, 50)
         current_target = gridpoint
-    elif event == cv2.EVENT_RBUTTONDOWN:
+    elif event == cv2.EVENT_RBUTTONDOWN and serial_out:
         # Send data
-        current_speed = 125
+        current_speed = cv2.getTrackbarPos('speed', 'grid')
         target = get_coords(current_target)
-        data = "{} {} {}".format(target[1], target[0], current_speed)
+        spin = "t"
+        data = "{} {} {} {}".format(current_speed, target[1], target[0], spin)
         print "----------------"
         print target
         print data
@@ -89,6 +92,7 @@ def doloop():
     cv2.createTrackbar('trim', 'color', 0, 200, nothing)
    # cv2.createTrackbar('user', 'grid', 0, 640, nothing)
     cv2.createTrackbar('difficulty', 'grid', 1, 4, nothing)
+    cv2.createTrackbar('speed', 'grid', 150, 1023, nothing)
     
     while True:
         # Trackbar updates
