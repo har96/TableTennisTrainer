@@ -66,9 +66,11 @@ def select_grid(event, x, y, flags, param):
     elif event == cv2.EVENT_RBUTTONDOWN and serial_out:
         # Send data
         current_speed = cv2.getTrackbarPos('speed', 'grid')
+        speedTop = cv2.getTrackbarPos('speedTop', 'grid')
+        rotate = cv2.getTrackbarPos('rotate', 'grid')
         target = get_coords(current_target)
         spin = "t"
-        data = "{} {} {} {}".format(current_speed, target[1], target[0], spin)
+        data = "{} {} {} {} {}".format(speedTop, current_speed, target[1], target[0], rotate)
         print "----------------"
         print target
         print data
@@ -93,6 +95,8 @@ def doloop():
    # cv2.createTrackbar('user', 'grid', 0, 640, nothing)
     cv2.createTrackbar('difficulty', 'grid', 1, 4, nothing)
     cv2.createTrackbar('speed', 'grid', 150, 1023, nothing)
+    cv2.createTrackbar('speedTop', 'grid', 150, 1023, nothing)
+    cv2.createTrackbar('rotate', 'grid', 90, 180, nothing)
     
     while True:
         # Trackbar updates
