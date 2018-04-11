@@ -66,8 +66,8 @@ def select_grid(event, x, y, flags, param):
         current_target = gridpoint
     elif event == cv2.EVENT_RBUTTONDOWN and serial_out:
         # Send data
-        current_speed = cv2.getTrackbarPos('speed', 'grid')
-        speedTop = cv2.getTrackbarPos('speedTop', 'grid')
+        current_speed = cv2.getTrackbarPos('Top Motor', 'grid')
+        speedTop = cv2.getTrackbarPos('Bottom Motor', 'grid')
         rotate = cv2.getTrackbarPos('rotate', 'grid')
         target = get_coords(current_target)
         spin = "t"
@@ -93,11 +93,11 @@ def doloop():
     cv2.createTrackbar('min', 'color', MIN_A, 500, nothing)
     cv2.createTrackbar('max', 'color', MAX_A, 1000, nothing)
     cv2.createTrackbar('trim', 'color', 0, 200, nothing)
-   # cv2.createTrackbar('user', 'grid', 0, 640, nothing)
+    cv2.createTrackbar('user', 'grid', 0, 640, nothing)
     cv2.createTrackbar('difficulty', 'grid', 0, 4, nothing)
-    cv2.createTrackbar('speed', 'grid', 150, 1023, nothing)
-    cv2.createTrackbar('speedTop', 'grid', 150, 1023, nothing)
-    cv2.createTrackbar('rotate', 'grid', 90, 180, nothing)
+    cv2.createTrackbar('Top Motor', 'grid', 150, 1023, nothing)
+    cv2.createTrackbar('Bottom Motor', 'grid', 150, 1023, nothing)
+    cv2.createTrackbar('rotation', 'grid', 90, 180, nothing)
 
     times = []
     
@@ -176,9 +176,10 @@ def doloop():
 
         end = time.time()
         times.append(end - start)
-#        print "Last loop: ", times[-1]
-#        if len(times) > 2:
-#            print "Average: ", sum(times[2:])/(len(times)-2)
+#         print "Detected user at position: ", userpos
+#         print "Last loop: ", times[-1]
+#         if len(times) > 2:
+#             print "Average: ", sum(times[2:])/(len(times)-2)
 
        
 doloop()
