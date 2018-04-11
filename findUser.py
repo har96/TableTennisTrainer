@@ -6,6 +6,7 @@ from drawTable import drawTable
 from strategy import *
 from frame_convert2 import video_cv, pretty_depth
 import serial
+import time
 
 DISTANCE_MAX = 249
 DISTANCE_MIN = 215
@@ -89,16 +90,20 @@ def doloop():
     nothing = lambda x: None
    # cv2.createTrackbar('distance min', 'color', 0, 255, nothing)
    # cv2.createTrackbar('distance max', 'color', 0, 255, nothing)
-    cv2.createTrackbar('min', 'color', 0, 500, nothing)
-    cv2.createTrackbar('max', 'color', 0, 1000, nothing)
+    cv2.createTrackbar('min', 'color', MIN_A, 500, nothing)
+    cv2.createTrackbar('max', 'color', MAX_A, 1000, nothing)
     cv2.createTrackbar('trim', 'color', 0, 200, nothing)
    # cv2.createTrackbar('user', 'grid', 0, 640, nothing)
-    cv2.createTrackbar('difficulty', 'grid', 1, 4, nothing)
+    cv2.createTrackbar('difficulty', 'grid', 0, 4, nothing)
     cv2.createTrackbar('speed', 'grid', 150, 1023, nothing)
     cv2.createTrackbar('speedTop', 'grid', 150, 1023, nothing)
     cv2.createTrackbar('rotate', 'grid', 90, 180, nothing)
+
+    times = []
     
     while True:
+        start = time.time()
+
         # Trackbar updates
         distance_min = cv2.getTrackbarPos('distance min', 'color')
         distance_max = cv2.getTrackbarPos('distance max', 'color')
@@ -157,7 +162,7 @@ def doloop():
 
 
         if 'c' in windows: cv2.imshow('color', video_cv(rgb))
-        char = cv2.waitKey(100)
+        char = cv2.waitKey(10)
         if char == 27:
             cv2.destroyAllWindows()
             break
@@ -168,6 +173,12 @@ def doloop():
         elif char == ord('r'):
             serial_out.close()
             serial_out.open()
+
+        end = time.time()
+        times.append(end - start)
+#        print "Last loop: ", times[-1]
+#        if len(times) > 2:
+#            print "Average: ", sum(times[2:])/(len(times)-2)
 
        
 doloop()
