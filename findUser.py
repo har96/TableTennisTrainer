@@ -43,11 +43,17 @@ def get_contour2(contours, min_a, max_a):
             return c
 
 def prepare_depth(image):
+    """
+    Prettify and format depth stream.
+    """
     img = pretty_depth(image)
     img = cv2.medianBlur(img, 5)
     return img
 
 def create_windows():
+    """
+    Open cv2 windows.
+    """
     if 'd' in windows:
         cv2.namedWindow('depth')
     if 'c' in windows:
@@ -59,31 +65,53 @@ def create_windows():
         cv2.setMouseCallback('grid', select_grid)
         cv2.imshow('grid', drawTable(0))
 
+def select_target(positions, difficulty=0):
+    """
+    Receives a list of selected targets
+    and picks one to shoot at based on difficulty.
+    Random picks the latest, while other difficulties
+    seeks to remove outliers.
+    """
+    return positions[-1]
+
+def send_target(target):
+    """
+    Send target over serial.
+    """
+    current_speed = cv2.getTrackbarPos('Top Motor', 'grid')
+    speedTop = cv2.getTrackbarPos('Bottom Motor', 'grid')
+    rotate = cv2.getTrackbarPos('rotation', 'grid')
+    if target:
+        target = get_coords(target)
+        data = "{} {} {} {} {}".format(speedTop, current_speed, target[1], target[0], rotate)
+        print "----------------"
+        print target
+        print data
+        serial_out.write(data)
+    print "----------------"
+
+
 def select_grid(event, x, y, flags, param):
+    """
+    Mouse event handler
+    """
     global current_target
     if event == cv2.EVENT_LBUTTONDOWN:
         gridpoint = get_nearest_grid((x,y),WIDTH, HEIGHT, 50)
         current_target = gridpoint
     elif event == cv2.EVENT_RBUTTONDOWN and serial_out:
         # Send data
-        current_speed = cv2.getTrackbarPos('speed', 'grid')
-        speedTop = cv2.getTrackbarPos('speedTop', 'grid')
-        rotate = cv2.getTrackbarPos('rotate', 'grid')
-        target = get_coords(current_target)
-        spin = "t"
-        data = "{} {} {} {} {}".format(speedTop, current_speed, target[1], target[0], rotate)
-        print "----------------"
-        print target
-        print data
-        serial_out.write(data)
-        print "from device: ", serial_out.read()
-        print "----------------"
+        send_target(current_target)
 
 def doloop():
+    """
+    Primary process loop.
+    """
     global depth, rgb, current_target
 
 
     current_target = None
+    positions = []
     
     create_windows()
 
@@ -93,15 +121,16 @@ def doloop():
     cv2.createTrackbar('min', 'color', MIN_A, 500, nothing)
     cv2.createTrackbar('max', 'color', MAX_A, 1000, nothing)
     cv2.createTrackbar('trim', 'color', 0, 200, nothing)
-   # cv2.createTrackbar('user', 'grid', 0, 640, nothing)
+    #cv2.createTrackbar('user', 'grid', 0, 640, nothing)
     cv2.createTrackbar('difficulty', 'grid', 0, 4, nothing)
-    cv2.createTrackbar('speed', 'grid', 150, 1023, nothing)
-    cv2.createTrackbar('speedTop', 'grid', 150, 1023, nothing)
-    cv2.createTrackbar('rotate', 'grid', 90, 180, nothing)
+    cv2.createTrackbar('Top Motor', 'grid', 170, 1023, nothing)
+    cv2.createTrackbar('Bottom Motor', 'grid', 150, 1023, nothing)
+    cv2.createTrackbar('rotation', 'grid', 90, 180, nothing)
 
     times = []
     
     while True:
+        time.sleep(1)
         start = time.time()
 
         # Trackbar updates
@@ -110,7 +139,7 @@ def doloop():
         min_a = cv2.getTrackbarPos('min', 'color')
         max_a = cv2.getTrackbarPos('max', 'color')
         trim = cv2.getTrackbarPos('trim', 'color')
-        diff = cv2.getTrackbarPos('difficulty', 'grid')
+        difficulty = cv2.getTrackbarPos('difficulty', 'grid')
         userpos = cv2.getTrackbarPos('user', 'grid')
         if distance_min == -1: distance_min = DISTANCE_MIN
         if distance_max == -1: distance_max = DISTANCE_MAX
@@ -151,14 +180,20 @@ def doloop():
 
                 if userpos == -1: userpos = target_point[0]
 
-        if diff: 
-            current_target = pick_target(userpos, diff)
-            current_speed = pick_speed(userpos, diff)
+        if difficulty: 
+            current_target = pick_target(userpos, difficulty)
+            current_speed = pick_speed(userpos, difficulty)
+
+        # Keep a list of the detected positions
+        positions.append(current_target)
+        if len(positions) == 5:
+            # select and send target
+            send_target(select_target(positions, difficulty))
+            positions = []
+
 
         if 'g' in windows: 
             cv2.imshow('grid', drawTable(userpos, current_target))
-
-
 
 
         if 'c' in windows: cv2.imshow('color', video_cv(rgb))
@@ -171,15 +206,17 @@ def doloop():
             cv2.namedWindow('saved')
             cv2.imshow('saved', video_cv(rgb))
         elif char == ord('r'):
-            serial_out.close()
-            serial_out.open()
+            if serial_out: 
+                serial_out.close()
+                serial_out.open()
 
         end = time.time()
         times.append(end - start)
-#        print "Last loop: ", times[-1]
-#        if len(times) > 2:
-#            print "Average: ", sum(times[2:])/(len(times)-2)
+#         print "Detected user at position: ", userpos
+#         print "Last loop: ", times[-1]
+#         if len(times) > 2:
+#             print "Average: ", sum(times[2:])/(len(times)-2)
 
        
 doloop()
-serial_out.close()
+if serial_out: serial_out.close()
