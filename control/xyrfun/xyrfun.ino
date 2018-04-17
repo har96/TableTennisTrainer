@@ -18,7 +18,7 @@ Serial.begin(9600);
 startup();
 motor1.attach(5);
 motor2.attach(3);
-servo_test();
+//servo_test();
 enable_motors();
 delay(2000);
 Serial.flush();
@@ -87,7 +87,7 @@ void loop() {
     motor1.writeMicroseconds(speed1);
     motor2.writeMicroseconds(speed2);
     valy = Serial.parseInt();
-    valy = (valy/9.0)*60+60;
+    valy = (valy/9.0)*32+60;
     Serial.print(valy);
     Serial.print(" ");
     valx = Serial.parseInt();
@@ -106,7 +106,7 @@ void loop() {
 
 void piston_up()
 {
-  piston.writeMicroseconds( map(5,0,180,SERVO_PULSE_ZERO,SERVO_PULSE_180) );
+  piston.writeMicroseconds( map(0,0,180,SERVO_PULSE_ZERO,SERVO_PULSE_180) );
 }
 
 void piston_down()
