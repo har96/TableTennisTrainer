@@ -14,6 +14,9 @@ MIN_A = 65
 MAX_A = 120
 EDGE = 20
 
+MOTOR1 = 170
+MOTOR2 = 150
+
 WIDTH = 640
 HEIGHT = 575
 
@@ -78,12 +81,16 @@ def send_target(target):
     """
     Send target over serial.
     """
-    current_speed = cv2.getTrackbarPos('Top Motor', 'grid')
-    speedTop = cv2.getTrackbarPos('Bottom Motor', 'grid')
+    speedTop = cv2.getTrackbarPos('Top Motor', 'grid')
+    speedBottom = cv2.getTrackbarPos('Bottom Motor', 'grid')
+
+    if speedTop == -1: speedTop = MOTOR1
+    if speedBottom == -1: speedBottom = MOTOR2
+
     rotate = cv2.getTrackbarPos('rotation', 'grid')
     if target:
         target = get_coords(target)
-        data = "{} {} {} {} {}".format(speedTop, current_speed, target[1], target[0], rotate)
+        data = "{} {} {} {} {}".format(speedBottom, speedTop, target[1], target[0], rotate)
         print "----------------"
         print target
         print data
@@ -123,14 +130,14 @@ def doloop():
     cv2.createTrackbar('trim', 'color', 0, 200, nothing)
     #cv2.createTrackbar('user', 'grid', 0, 640, nothing)
     cv2.createTrackbar('difficulty', 'grid', 0, 4, nothing)
-    cv2.createTrackbar('Top Motor', 'grid', 170, 1023, nothing)
-    cv2.createTrackbar('Bottom Motor', 'grid', 150, 1023, nothing)
+    #cv2.createTrackbar('Top Motor', 'grid', MOTOR1, 1023, nothing)
+    #cv2.createTrackbar('Bottom Motor', 'grid', MOTOR2, 1023, nothing)
     cv2.createTrackbar('rotation', 'grid', 90, 180, nothing)
 
     times = []
     
     while True:
-        time.sleep(1)
+        #time.sleep(1)
         start = time.time()
 
         # Trackbar updates
@@ -186,7 +193,7 @@ def doloop():
 
         # Keep a list of the detected positions
         positions.append(current_target)
-        if len(positions) == 5:
+        if len(positions) == 6:
             # select and send target
             send_target(select_target(positions, difficulty))
             positions = []
