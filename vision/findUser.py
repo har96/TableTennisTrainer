@@ -33,6 +33,14 @@ else:
             sys.exit(0)
     else: serial_out = None
 
+# Start agitator
+from RPi import GPIO
+GPIO.setmode(GPIO.BOARD)
+GPIO.setup(12, GPIO.OUT)
+pin = GPIO.PWM(12, 50)
+
+pin.start(2.5)
+
 def get_contour(contours, min_a, max_a):
     for c in contours:
         x,y,w,h = cv2.boundingRect(c)
@@ -128,7 +136,7 @@ def doloop():
     cv2.createTrackbar('min', 'color', MIN_A, 500, nothing)
     cv2.createTrackbar('max', 'color', MAX_A, 1000, nothing)
     cv2.createTrackbar('trim', 'color', 0, 200, nothing)
-    #cv2.createTrackbar('user', 'grid', 0, 640, nothing)
+    cv2.createTrackbar('user', 'grid', 0, 640, nothing)
     cv2.createTrackbar('difficulty', 'grid', 0, 4, nothing)
     #cv2.createTrackbar('Top Motor', 'grid', MOTOR1, 1023, nothing)
     #cv2.createTrackbar('Bottom Motor', 'grid', MOTOR2, 1023, nothing)
@@ -186,6 +194,9 @@ def doloop():
                 cv2.drawContours(rgb, [target], -1, (0, 255, 0), 3)
 
                 if userpos == -1: userpos = target_point[0]
+
+        #Clip userpos
+        userpos = max(min(2*userpos - WIDTH/2, WIDTH), 0)
 
         if difficulty: 
             current_target = pick_target(userpos, difficulty)
